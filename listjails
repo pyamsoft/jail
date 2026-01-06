@@ -25,6 +25,18 @@ _log() {
   return 0
 }
 
+##
+# Error Log
+#
+# Accepts arguments in the same format as printf
+# $1 message
+# $@ arguments
+##
+_elog() {
+  _log "$@" 1>&2 || return 1
+  return 0
+}
+
 _extract_jail() {
   _jail_line="$1"
 
@@ -69,15 +81,15 @@ _list_jails() {
 
 _check_prereq() {
   if ! command -v ps >/dev/null; then
-    _log 'Must have "ps" command.' 1>&2
+    _elog 'Must have "ps" command.'
     return 1
   fi
   if ! command -v grep >/dev/null; then
-    _log 'Must have "grep" command.' 1>&2
+    _elog 'Must have "grep" command.'
     return 1
   fi
   if ! command -v awk >/dev/null; then
-    _log 'Must have "awk" command.' 1>&2
+    _elog 'Must have "awk" command.'
     return 1
   fi
   return 0

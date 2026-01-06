@@ -7,6 +7,24 @@ __ALREADY_SEEN_PIDS=""
 readonly __NEWLINE_IFS="
 "
 
+##
+# Log
+#
+# Accepts arguments in the same format as printf
+# $1 message
+# $@ arguments
+##
+_log() {
+  _msg="$1"
+  shift
+
+  printf -- "[%s]: ${_msg}\n" "${NAME}" "$@"
+
+  unset _msg
+
+  return 0
+}
+
 _extract_jail() {
   _jail_line="$1"
 
@@ -33,6 +51,7 @@ _extract_jail() {
   else
     __ALREADY_SEEN_PIDS="${__ALREADY_SEEN_PIDS} ${_jail_pid}"
   fi
+
   printf -- '[%s] %s %s (%s)\n' "${_jail_owner}" "${_jail_pid}" "${_jail_program}" "${_jail_name}"
 
   unset _jail_owner
@@ -50,15 +69,15 @@ _list_jails() {
 
 _check_prereq() {
   if ! command -v ps >/dev/null; then
-    printf -- 'Must have "ps" command.\n'
+    _log 'Must have "ps" command.' 1>&2
     return 1
   fi
   if ! command -v grep >/dev/null; then
-    printf -- 'Must have "grep" command.\n'
+    _log 'Must have "grep" command.' 1>&2
     return 1
   fi
   if ! command -v awk >/dev/null; then
-    printf -- 'Must have "awk" command.\n'
+    _log 'Must have "awk" command.' 1>&2
     return 1
   fi
   return 0

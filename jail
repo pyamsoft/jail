@@ -4,7 +4,10 @@
 #
 # See _usage for details
 
-readonly VERSION="0.0.4"
+NAME="$(basename "$0")"
+readonly NAME
+
+readonly VERSION="0.0.5"
 readonly MY_PID="$$"
 
 # Can be overridden by the environment
@@ -13,6 +16,24 @@ readonly JAIL_DIR="${JAIL_DIR:-${HOME}/.local/etc/jails}"
 # IFS of only newline
 readonly __NEWLINE_IFS="
 "
+
+##
+# Log
+#
+# Accepts arguments in the same format as printf
+# $1 message
+# $@ arguments
+##
+_log() {
+  _msg="$1"
+  shift
+
+  printf -- "[%s]: ${_msg}\n" "${NAME}" "$@"
+
+  unset _msg
+
+  return 0
+}
 
 _clean_path() {
   _current_path="${PATH}"
@@ -51,7 +72,7 @@ _create_home() {
 
   # Create the jail root
   mkdir -p "${_home}/home" "${_home}/var/tmp" || {
-    printf -- 'Failed to create jail dir: %s\n' "${_home}"
+    _log 'Failed to create jail dir: %s' "${_home}" 1>&2
 
     unset _home
     return 1
@@ -473,22 +494,22 @@ ${_j_sys_binds}
 
 _check_prereq() {
   if ! command -v bwrap >/dev/null; then
-    printf -- 'Must have "bwrap" installed.\n'
+    _log 'Must have "bwrap" installed.' 1>&2
     return 1
   fi
 
   if ! command -v tr >/dev/null; then
-    printf -- 'Must have "tr" installed.\n'
+    _log 'Must have "tr" installed.' 1>&2
     return 1
   fi
 
   if ! command -v tac >/dev/null; then
-    printf -- 'Must have "tac" installed.\n'
+    _log 'Must have "tac" installed.' 1>&2
     return 1
   fi
 
   if ! command -v mkdir >/dev/null; then
-    printf -- 'Must have "mkdir" installed.\n'
+    _log 'Must have "mkdir" installed.' 1>&2
     return 1
   fi
 
@@ -505,7 +526,7 @@ main() {
   # Assume the first argument is the command to run
   _cmd="$1"
   if [ -z "${_cmd}" ]; then
-    printf -- 'Must provide command as first argument.\n'
+    _log 'Must provide command as first argument.' 1>&2
     _usage
     return 1
   fi
@@ -524,7 +545,9 @@ main() {
 
       # The next argument is the new command
       _cmd="$1"
-      shift
+      if [ -n "${_cmd}" ]; then
+        shift
+      fi
       ;;
     --name)
       # We want a custom name
@@ -535,7 +558,9 @@ main() {
 
       # The next argument is the new command
       _cmd="$1"
-      shift
+      if [ -n "${_cmd}" ]; then
+        shift
+      fi
       ;;
     --x11)
       # We need X11 compat
@@ -543,7 +568,9 @@ main() {
 
       # The next argument is the new command
       _cmd="$1"
-      shift
+      if [ -n "${_cmd}" ]; then
+        shift
+      fi
       ;;
     --wayland)
       # We need Wayland compat
@@ -551,14 +578,18 @@ main() {
 
       # The next argument is the new command
       _cmd="$1"
-      shift
+      if [ -n "${_cmd}" ]; then
+        shift
+      fi
       ;;
     --)
       # Stop processing
 
       # The next argument is the new command
       _cmd="$1"
-      shift
+      if [ -n "${_cmd}" ]; then
+        shift
+      fi
 
       break
       ;;
@@ -572,7 +603,7 @@ main() {
 
   # Double check the command here after all this proccessing
   if [ -z "${_cmd}" ]; then
-    printf -- 'Must provide command as first argument.\n'
+    _log 'Must provide command as first argument.' 1>&2
     _usage
     return 1
   fi

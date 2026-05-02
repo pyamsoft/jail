@@ -153,6 +153,7 @@ Any arguments passed after the command and "--" will be passed to the command
 
 [Options]
 --name <name>    Name the jail (otherwise uses the command name)
+--cli            Run a CLI application in the jail (no new session)
 --shell          Open a shell in the jail instead of executing the command
 --x11            Bind paths for running with X11/XWayland
 --wayland        Bind paths for running with Wayland
@@ -237,9 +238,10 @@ _run_jail() {
   _j_jail="$2"
   _j_name="$3"
 
-  _j_open_shell="$4"
-  _j_x11="$5"
-  _j_wayland="$6"
+  _j_cli="$4"
+  _j_open_shell="$5"
+  _j_x11="$6"
+  _j_wayland="$7"
 
   # The rest of the arguments are commands
   shift
@@ -248,9 +250,12 @@ _run_jail() {
   shift
   shift
   shift
+  shift
 
   # Use a new session
-  _j_session="--new-session"
+  if [ "${_j_cli}" -eq 0 ]; then
+    _j_session="--new-session"
+  fi
 
   # If we are opening a shell, override the command
   # and keep current session
@@ -531,6 +536,8 @@ _check_prereq() {
 main() {
   _check_prereq || return 1
   _name=""
+
+  _is_cli=0
   _open_shell=0
   _use_x11=0
   _use_wayland=0
@@ -550,6 +557,16 @@ main() {
       # Show help
       _usage
       return 0
+      ;;
+    --cli)
+      # We are running a CLI application
+      _is_cli=1
+
+      # The next argument is the new command
+      _cmd="$1"
+      if [ -n "${_cmd}" ]; then
+        shift
+      fi
       ;;
     --shell)
       # We want to open a shell
@@ -627,11 +644,12 @@ main() {
 
   _jail_dir="${JAIL_DIR}/${_name}"
   _create_home "${_jail_dir}" || return 1
-  _run_jail "${_cmd}" "${_jail_dir}" "${_name}" "${_open_shell}" "${_use_x11}" "${_use_wayland}" "$@" || return 1
+  _run_jail "${_cmd}" "${_jail_dir}" "${_name}" "${_is_cli}" "${_open_shell}" "${_use_x11}" "${_use_wayland}" "$@" || return 1
 
   unset _use_wayland
   unset _use_x11
   unset _open_shell
+  unset _is_cli
   unset _cmd
   unset _jail_dir
   unset _name

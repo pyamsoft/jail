@@ -278,6 +278,15 @@ _run_jail() {
       break
     fi
 
+    # Verify no embedded newline
+    case "$1" in
+    *'
+'*)
+      _elog 'Invalid newline in bwrap argument "%s"' "$1"
+      return 1
+      ;;
+    esac
+
     if [ -z "${_bwrap_args}" ]; then
       _bwrap_args="$1"
     else
@@ -298,6 +307,15 @@ $1"
 
       break
     fi
+
+    # Verify no embedded newline
+    case "$1" in
+    *'
+'*)
+      _elog 'Invalid newline in command argument "%s"' "$1"
+      return 1
+      ;;
+    esac
 
     if [ -z "${_cmd_args}" ]; then
       _cmd_args="$1"

@@ -76,7 +76,7 @@ _extract_jail() {
 
 _list_jails() {
   # shellcheck disable=SC2009
-  printf -- '%s\n' "$(ps aux | grep JAIL_PID | grep -v grep)"
+  ps aux | grep JAIL_PID | grep -v grep
 }
 
 _check_prereq() {

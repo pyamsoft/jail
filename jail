@@ -103,19 +103,30 @@ _bind_symlink() {
     _resolv_link="$(readlink "${_bind_symlink_path}")"
     _resolv_real_link="$(readlink -f "${_bind_symlink_path}")"
 
+    # Normalize relative symlink target to an absolute path so bwrap receives valid paths
+    case "${_resolv_link}" in
+    /*)
+      _resolv_abs_link="${_resolv_link}"
+      ;;
+    *)
+      _resolv_abs_link="$(dirname "${_bind_symlink_path}")/${_resolv_link}"
+      ;;
+    esac
+
     printf -- '--%s
 %s
 %s
-' "${_bind_symlink_bind}" "${_bind_symlink_path}" "${_resolv_link}"
+' "${_bind_symlink_bind}" "${_bind_symlink_path}" "${_resolv_abs_link}"
 
-    if [ "${_resolv_link}" != "${_resolv_real_link}" ]; then
+    if [ "${_resolv_abs_link}" != "${_resolv_real_link}" ]; then
       printf -- '--%s
 %s
 %s
-' "${_bind_symlink_bind}" "${_resolv_link}" "${_resolv_real_link}"
+' "${_bind_symlink_bind}" "${_resolv_abs_link}" "${_resolv_real_link}"
     fi
 
     unset _resolv_link
+    unset _resolv_abs_link
     unset _resolv_real_link
   fi
 

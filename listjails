@@ -1,5 +1,8 @@
 #!/bin/sh
 
+NAME="$(basename "$0")"
+readonly NAME
+
 # A list of jail PIDs we have already printed out
 __ALREADY_SEEN_PIDS=""
 

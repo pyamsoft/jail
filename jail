@@ -667,8 +667,8 @@ main() {
   fi
 
   if [ -z "${_name}" ]; then
-    # Assume the jailname is the command name
-    _name="${_cmd}"
+    # Assume the jailname is the command basename
+    _name="$(basename "${_cmd}")"
   fi
 
   _jail_dir="${JAIL_DIR}/${_name}"
